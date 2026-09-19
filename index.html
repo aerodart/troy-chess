@@ -158,6 +158,11 @@
     color: #666;
     font-size: 14px;
   }
+  /* Skip the wait-and-see for a double tap so a move lands at once, and keep a
+     finger dragged across the board from scrolling the page underneath it. */
+  #board {
+    touch-action: none;
+  }
   header .control {
     margin: 6px 0 0;
     color: #8a7f70;
@@ -451,6 +456,12 @@
   }
 
   function onDrop(source, target) {
+    if (source === target) {
+      // Not a drag. chessboard.js reports a click or tap in place as a drop onto
+      // the square it began on, and the tap handling below owns that case, so
+      // leave any selection alone here rather than clearing what it just set.
+      return 'snapback';
+    }
     clearSelection();
     if (!tryMove(source, target)) { return 'snapback'; }
     return undefined;
@@ -489,16 +500,26 @@
     onSnapEnd: onSnapEnd
   });
 
-  // Click to move, for phones and for anyone who would rather not drag.
-  $('#board').on('click', '.square-55d63', function () {
+  // Tap or click to move, for phones and for anyone who would rather not drag.
+  // One tap can arrive twice, once from the touchend handler below and once from
+  // the click the browser synthesises after it, and handling it twice selects a
+  // square and then immediately deselects it. Treat a quick repeat on the same
+  // square as the same tap.
+  var DUPLICATE_TAP_MS = 350;
+  var lastTap = { square: null, at: 0 };
+
+  function handleSquareTap($square) {
     if (!isHumanTurn()) { return; }
-    var square = $(this).attr('data-square');
+    var square = $square.attr('data-square');
+    var now = Date.now();
+    if (square === lastTap.square && now - lastTap.at < DUPLICATE_TAP_MS) { return; }
+    lastTap = { square: square, at: now };
     var piece = game.get(square);
     var isOwnPiece = piece !== null && piece.color === humanColor;
     if (selectedSquare === null) {
       if (isOwnPiece) {
         selectedSquare = square;
-        $(this).addClass('selected-square');
+        $square.addClass('selected-square');
       }
       return;
     }
@@ -508,10 +529,57 @@
     } else if (isOwnPiece) {
       clearSelection();
       selectedSquare = square;
-      $(this).addClass('selected-square');
+      $square.addClass('selected-square');
     } else {
       clearSelection();
     }
+  }
+
+  $('#board').on('click', '.square-55d63', function () {
+    handleSquareTap($(this));
+  });
+
+  // On a phone that click never arrives. chessboard.js calls preventDefault on
+  // touchstart to set up its own drag, and a touch whose default is prevented
+  // does not produce a synthesised click, so tap to move did nothing. Recognise
+  // the tap here instead: remember the square the finger went down on, and treat
+  // a touch that neither travelled far nor lasted long as a tap rather than a
+  // drag. The square is taken at touchstart because by touchend chessboard.js
+  // may have a dragged piece sitting under the finger instead of a square.
+  var TAP_SLOP_PX = 12;
+  var TAP_MAX_MS = 600;
+  var touchStart = null;
+
+  $('#board').on('touchstart', function (event) {
+    var touch = event.originalEvent.changedTouches[0];
+    var $square = $(event.target).closest('.square-55d63');
+    touchStart = {
+      x: touch.clientX,
+      y: touch.clientY,
+      at: Date.now(),
+      $square: $square.length ? $square : null
+    };
+  });
+
+  $('#board').on('touchend', function (event) {
+    var start = touchStart;
+    touchStart = null;
+    if (start === null || start.$square === null) { return; }
+    var touch = event.originalEvent.changedTouches[0];
+    var travelled = Math.abs(touch.clientX - start.x) + Math.abs(touch.clientY - start.y);
+    if (travelled <= TAP_SLOP_PX && Date.now() - start.at <= TAP_MAX_MS) {
+      handleSquareTap(start.$square);
+      return;
+    }
+    // A drag rather than a tap. chessboard.js's own touch dragging never fires,
+    // so a finger dragged across the board would otherwise do nothing at all.
+    // Read the square under where the finger lifted and play it as a move from
+    // the square it went down on.
+    var under = document.elementFromPoint(touch.clientX, touch.clientY);
+    var $target = $(under).closest('.square-55d63');
+    if ($target.length === 0) { return; }
+    clearSelection();
+    tryMove(start.$square.attr('data-square'), $target.attr('data-square'));
   });
 
   function newGame() {
