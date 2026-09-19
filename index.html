@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Troy, by Team Trojan Horse</title>
-<meta name="description" content="Play Troy, the chess engine Team Trojan Horse built for the AI Chessathon. It runs entirely in your browser.">
+<meta name="description" content="Play Troy, the chess engine Team Trojan Horse entered in AI Chessathon 2026. Runs entirely in your browser, nothing to install.">
 <!-- The card LinkedIn, Slack and WhatsApp show when the link is shared. og:image
      has to be an absolute URL, so it names the published domain rather than a
      relative path. -->
 <meta property="og:type" content="website">
 <meta property="og:title" content="Troy, a chess engine by Team Trojan Horse">
-<meta property="og:description" content="Play it in your browser. Two minutes each, nothing to install, and the engine runs on your own device.">
+<meta property="og:description" content="Entered in AI Chessathon 2026. Two minutes plus 0.5 seconds, nothing to install, and the engine runs on your own device.">
 <meta property="og:url" content="https://aerodart.github.io/troy-chess/">
 <meta property="og:image" content="https://aerodart.github.io/troy-chess/preview.png">
 <meta property="og:image:width" content="1200">
@@ -158,6 +158,12 @@
     color: #666;
     font-size: 14px;
   }
+  header .control {
+    margin: 6px 0 0;
+    color: #8a7f70;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+  }
   #boot {
     margin: 10px 0;
     padding: 10px 12px;
@@ -178,8 +184,8 @@
 <main>
   <header>
     <h1>Troy</h1>
-    <p class="tagline">A chess engine by Team Trojan Horse. Two minutes each, the
-    control it played at, and it runs entirely in your browser.</p>
+    <p class="tagline">A chess engine by Team Trojan Horse, entered in AI Chessathon 2026.</p>
+    <p class="control">Time control: 2 minutes + 0.5 seconds</p>
   </header>
 
   <div id="boot">Waking Troy up. The first load fetches a Python runtime, so give it a few seconds.</div>
@@ -213,13 +219,13 @@
   </div>
 
   <footer>
-    <p>Troy is the engine Team Trojan Horse entered in the AI Chessathon 2026, a
-    negamax alpha-beta search with a tapered piece-square evaluation whose weights
-    were fit by logistic regression on 725,000 labelled positions.</p>
-    <p>This browser build runs the reference engine rather than the compiled one,
-    because there is no numba in a browser. It searches a few hundred times fewer
-    positions per second than the version that played the rated games, so it is a
-    good deal weaker here than it is on a laptop.</p>
+    <p>Built using negamax alpha-beta search with a tapered piece-square
+    evaluation, its weights fit by logistic regression on 725,000 labelled
+    positions.</p>
+    <p>Note: this serverless build is weaker in a browser than on a laptop. It runs
+    the reference engine rather than the compiled one, because there is no numba in
+    a browser, so it searches about 150 times fewer positions per second than the
+    submitted version.</p>
     <p>Nothing leaves your device. There is no server, no account and nothing stored.</p>
     <p class="credit">A production by Advait Bagri and Jonathan Au Yeung.</p>
   </footer>

@@ -6,6 +6,10 @@ build: open the page and play it, with no install, no account and no server.
 
 **Play it:** https://aerodart.github.io/troy-chess/
 
+Games run at the competition time control, 2 minutes each plus 0.5 seconds a
+move, and Troy budgets its thinking from whatever is left on its own clock, which
+works out at about five seconds for the first move and less as the clock drains.
+
 ## How it plays
 
 Troy is a negamax alpha-beta search with a tapered piece-square evaluation. The
@@ -33,10 +37,12 @@ The competition build gets its speed from a second implementation of the board
 and search compiled with numba, which `agent.py` imports inside a `try` block.
 There is no LLVM in a browser, so that import fails here and the reference
 engine plays instead, exactly as it would on the platform if the compiled import
-threw. That path searches a few hundred times fewer positions per second, so
-Troy is a good deal weaker in this page than it is on a laptop, reaching roughly
-four plies where the compiled build reaches nine. It still beats most casual
-players, and it finds mate in one in two milliseconds.
+threw. Measured on the same positions, that path runs at 13.2 thousand nodes per
+second against the compiled build's 1.98 million, so about 150 times fewer, and
+Troy is a good deal weaker in this page than it is on a laptop. Given five
+seconds it completes three or four plies in a middlegame and around eight once
+the board has emptied. It still beats most casual players, and it finds mate in
+one in two milliseconds.
 
 ## What is here
 
